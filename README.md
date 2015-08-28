@@ -2,6 +2,10 @@
 
 It turned out to be quite difficult for me to find a command-line tool for decompressing zlib-compressed data, so I wrote my own.
 
+## Install
+
+`go get -u github.com/kevin-cantwell/zlibr/cmd/zlibr`
+
 ## Usage
 
 #### Decompressing a zlib-compressed file
