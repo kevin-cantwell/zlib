@@ -36,7 +36,7 @@ func main() {
 				exit(err.Error(), 1)
 			}
 			defer z.Close()
-			if _, err := io.Copy(os.Stdout, z); err != nil {
+			if _, err := io.Copy(os.Stdout, z); err != nil && err != io.ErrUnexpectedEOF {
 				exit(err.Error(), 1)
 			}
 		} else {
