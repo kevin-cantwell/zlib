@@ -12,7 +12,7 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "zlib"
+	app.Name = "zlibr"
 	app.Usage = "A wrapper for the zlib compression algorithm."
 	app.Action = func(c *cli.Context) {
 		var err error
