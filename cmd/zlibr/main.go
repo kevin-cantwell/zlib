@@ -15,41 +15,30 @@ func main() {
 	app.Name = "zlibr"
 	app.Usage = "A wrapper for the zlib compression algorithm."
 	app.Action = func(c *cli.Context) {
-		var err error
+		// All input comes from stdin
 		var reader io.Reader = os.Stdin
 
-		// If a filename was passed in as an argument, read from the file instead of stdin
-		if len(c.Args()) > 0 {
-			reader, err = os.Open(c.Args()[0])
-			if err != nil {
-				exit(err.Error(), 1)
-			}
-		}
-
 		if c.Bool("decompress") {
-			// If the input is base64 encoded, decode it first.
-			if c.Bool("base64") {
-				reader = base64.NewDecoder(base64.StdEncoding, reader)
+			if !c.Bool("raw") { // Then assume base64 encoding
+				reader = pipeToBase64Decoder(reader)
 			}
-			z, err := zlib.NewReader(reader)
-			if err != nil {
+			compressorReadCloser := pipeToZlibDecompressor(reader)
+			if _, err := io.Copy(os.Stdout, compressorReadCloser); err != nil {
 				exit(err.Error(), 1)
 			}
-			defer z.Close()
-			if _, err := io.Copy(os.Stdout, z); err != nil && err != io.ErrUnexpectedEOF {
-				exit(err.Error(), 1)
-			}
+			compressorReadCloser.Close()
 		} else {
 			var writer io.Writer = os.Stdout
-			// If base64 encoding is specified, encode the output to stdout
-			if c.Bool("base64") {
-				writer = base64.NewEncoder(base64.StdEncoding, writer)
+			if !c.Bool("raw") { // Then assume base64 encoding
+				encoderWriteCloser := pipeToBase64Encoder(writer)
+				defer encoderWriteCloser.Close()
+				writer = encoderWriteCloser
 			}
-			z := zlib.NewWriter(writer)
-			defer z.Close()
-			if _, err := io.Copy(z, reader); err != nil {
+			compressorWriteCloser := pipeToZlibCompressor(writer)
+			if _, err := io.Copy(compressorWriteCloser, reader); err != nil {
 				exit(err.Error(), 1)
 			}
+			compressorWriteCloser.Close()
 		}
 	}
 	app.Flags = []cli.Flag{
@@ -58,11 +47,36 @@ func main() {
 			Usage: "Decompresses the input instead of compressing the output.",
 		},
 		cli.BoolFlag{
-			Name:  "b, base64",
-			Usage: "Decodes the input or encodes the output using base64 encoding.",
+			Name:  "r, raw",
+			Usage: "Decodes or encodes the output without assuming base64 encoding.",
 		},
 	}
 	app.Run(os.Args)
+}
+
+func pipeToBase64Decoder(reader io.Reader) io.Reader {
+	return base64.NewDecoder(base64.StdEncoding, reader)
+}
+
+func pipeToZlibDecompressor(reader io.Reader) io.ReadCloser {
+	readerCloser, err := zlib.NewReader(reader)
+	if err != nil {
+		exit(err.Error(), 1)
+	}
+	// defer readerCloser.Close()
+	return readerCloser
+}
+
+func pipeToBase64Encoder(writer io.Writer) io.WriteCloser {
+	writerCloser := base64.NewEncoder(base64.StdEncoding, writer)
+	// defer writerCloser.Close()
+	return writerCloser
+}
+
+func pipeToZlibCompressor(writer io.Writer) io.WriteCloser {
+	writerCloser := zlib.NewWriter(writer)
+	// defer writerCloser.Close()
+	return writerCloser
 }
 
 func exit(msg string, code int) {
