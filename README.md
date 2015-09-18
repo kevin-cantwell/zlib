@@ -1,21 +1,22 @@
-# zlibr
+# zlib
 
-It turned out to be quite difficult for me to find a command-line tool for decompressing and compressing zlib-compressed data, so I wrote my own.
-
-Without any arguments, zlibr will compress, then base64-encode an input stream.
+I couldn't find a command-line tool for decompressing and compressing zlib data, so I wrote my own. 
+That's about the long and short of it.
 
 ## Installation
 
-`go get -u github.com/kevin-cantwell/zlibr/cmd/zlibr`
+`go get -u github.com/kevin-cantwell/zlib/cmd/zlib`
 
 ## Usage
 
+Without any arguments, zlib will compress an input stream. Use the `-d` flag for decompression.
+
 ```
 NAME:
-   zlibr - A wrapper for the zlib compression algorithm.
+   zlib - A wrapper for the zlib compression algorithm.
 
 USAGE:
-   zlibr [global options] command [command options] [arguments...]
+   zlib [global options] command [command options] [arguments...]
 
 VERSION:
    0.0.0
@@ -25,52 +26,39 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    -d, --decompress Decompresses the input instead of compressing the output.
-   -r, --raw        Decodes or encodes the output without assuming base64 encoding.
    --help, -h       show help
    --version, -v    print the version
 ```
 
 ## Examples
 
+#### Compressing a file
+
+```bash
+zlib < file > file.zlib
+```
+
 #### Decompressing a zlib-compressed file
 
 ```bash
-zlibr --decompress --raw < compressedfile
+zlib -d < file.zlib
 ```
 
-#### Decoding and decompressing a zlib-compressed, base64-encoded, file
-
+#### Compressing and base64-encoding some json
 
 ```bash
-zlibr --decompress < compressedfile
+echo -n '{"foo":"bar"}' | zlib | base64
 ```
+
+Outputs: `eJyqVkrLz1eyUkpKLFKqBQQAAP//HXoENA==`
 
 #### Decoding and decompressing some base64-encoded and zlib-compressed input
 
 ```bash
-echo -n 'eJyqVkrLz1eyUkpKLFKq5QIEAAD//yG4' | zlibr --decompress
+echo -n 'eJyqVkrLz1eyUkpKLFKqBQQAAP//HXoENA==' | base64 -D | zlib -d
 ```
 
 Outputs: `{"foo":"bar"}`
 
 
-#### Compressing and base64-encoding some json
 
-```bash
-echo -n '{"foo":"bar"}' | zlibr
-```
-
-Outputs: `eJyqVkrLz1eyUkpKLFKq5QIEAAD//yG4`
-
-
-#### Compressing a file
-
-```bash
-zlibr --raw < file
-```
-
-#### Compressing and base64-encoding a file
-
-```bash
-zlibr < file
-```
