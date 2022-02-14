@@ -3,7 +3,7 @@
 I couldn't find a command-line tool for decompressing and compressing zlib data, so I wrote my own. 
 That's about the long and short of it.
 
-_Update_: Someone noted that [`pigz`](https://formulae.brew.sh/formula/pigz) exists and can do zlib compression with `pigz -z`. Nice!
+_Update_: [@stokito](https://github.com/stokito) noted that [`pigz`](https://formulae.brew.sh/formula/pigz) exists and can do zlib compression with `pigz -z`. Nice!
 
 ## Installation
 
