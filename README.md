@@ -5,6 +5,9 @@ That's about the long and short of it.
 
 ## Installation
 
+`go install github.com/kevin-cantwell/zlib/cmd/zlib@latest`
+
+For older versions of Go, try:
 `go get -u github.com/kevin-cantwell/zlib/cmd/zlib`
 
 ## Usage
